@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Amőba Játék</string>
+    <string name="navigation_drawer_open">Navigáció megjelenítése</string>
+    <string name="navigation_drawer_close">Navigáció elrejtése</string>
+    <string name="nav_header_title">OldGuys Team</string>
+    <string name="nav_header_subtitle">j.cserko@gmail.com</string>
+    <string name="nav_header_desc">Navigációs sáv</string>
+    <string name="action_settings">Beállítások</string>
+</resources>
