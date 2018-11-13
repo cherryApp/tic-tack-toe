@@ -17,6 +17,9 @@ import android.view.MenuItem;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    Game game;
+    private boolean computerMode = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +27,7 @@ public class MainActivity extends AppCompatActivity
 
         // Game instance.
         // Game instance.
-        Game game = new Game(this);
+        game = new Game(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -95,6 +98,9 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_slideshow:
                 Log.v("Button click","SlideShow selected");
+                computerMode = !computerMode;
+                game.toggleGameMode(computerMode);
+                item.setTitle(computerMode ? "Játékos ellen" : "Gép ellen");
                 break;
             case R.id.nav_manage:
                 Log.v("Button click","Manage selected");

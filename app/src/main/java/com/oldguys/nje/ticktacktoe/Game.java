@@ -1,7 +1,6 @@
 package com.oldguys.nje.ticktacktoe;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -30,12 +29,17 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     private static final int winAmount = 5;
     private static final int tableSize = 10;
     private int[][] winPatterns = new int[][] {
-            {0, 1}, {1, 0}, {1, 1}, {-1, -1}
+            {0, 1}, {1, 0}, {1, 1}, {1, -1}
     };
-    private String lastWinner;
+    private String lastWinner = "";
+    private TicTacToeAI AI;
+    private boolean againstToComputer = false;
+    private String player2Name = "Játékos 2";
 
     public Game(Context context) {
         this.context = context;
+
+        AI = new TicTacToeAI(tableSize, player1Mark);
 
         // Set layout variables.
         textViewPlayer1 = ((Activity) context).findViewById(R.id.text_view_p1);
@@ -50,6 +54,15 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 clearPlayingField();
             }
         });
+    }
+
+    public void toggleGameMode(boolean mode) {
+        againstToComputer = mode;
+        player2Name = againstToComputer ? "Computer" : "Játékos 2";
+        player1Points = 0;
+        player2Points = 0;
+        clearPlayingField();
+        showPlayerPoints();
     }
 
     private void generateButtons() {
@@ -91,6 +104,9 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         }
 
         player1Turn = !lastWinner.equals(player1Mark);
+        if (againstToComputer) {
+            player1Turn = true;
+        }
     }
 
     @Override
@@ -101,11 +117,16 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
         if (player1Turn) {
             ((Button) v).setText( player1Mark );
+            if (againstToComputer) {
+                int[] pos = AI.jump(buttons);
+                buttons[pos[0]][pos[1]].setText( player2Mark );
+            } else {
+                player1Turn = !player1Turn;
+            }
         } else {
             ((Button) v).setText( player2Mark );
+            player1Turn = !player1Turn;
         }
-
-        player1Turn = !player1Turn;
 
         lastWinner = checkForWin();
         if (!lastWinner.equals("")) {
@@ -115,7 +136,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                         Toast.LENGTH_LONG).show();
             } else {
                 player2Points++;
-                Toast.makeText(context, "A Játékos 2 megnyerte a meccset!",
+                Toast.makeText(context, player2Name +" megnyerte a meccset!",
                         Toast.LENGTH_LONG).show();
             }
 
@@ -126,7 +147,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
     private void showPlayerPoints() {
         textViewPlayer1.setText( "Játékos 1: " + player1Points );
-        textViewPlayer2.setText( "Játékos 2: " + player2Points );
+        textViewPlayer2.setText( player2Name + ": " + player2Points );
     }
 
     private String checkForWin() {
