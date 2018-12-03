@@ -6,35 +6,42 @@ public class TicTacToeAI {
 
     private int tableSize;
     private int winAmount;
+    String computerPlayer;
     String opponent;
 
     private String[][] table;
 
-    public TicTacToeAI(int tableSize, int winAmount, String opponent) {
+    public TicTacToeAI(int tableSize, int winAmount, String computerPlayer, String opponent) {
         this.tableSize = tableSize;
         this.winAmount = winAmount;
+        this.computerPlayer = computerPlayer;
         this.opponent = opponent;
 
         table = new String[tableSize][tableSize];
     }
 
-    private boolean checkFieldForWin(int x, int y, int dirX, int dirY, String mark)
+    private void initTable(Button[][] buttons)
+    {
+        for (int i = 0; i < tableSize; i++) {
+            for (int j = 0; j < tableSize; j++) {
+                table[i][j] = buttons[i][j].getText().toString();
+            }
+        }
+    }
+
+    private boolean checkField(int x, int y, int dirX, int dirY, String mark, int amount)
     {
         int sum = 0;
 
-        for (int i = 0; i < winAmount; i++)
-        {
-            if (x < 0 || y < 0 || x >= tableSize || y >= tableSize)
-            {
+        for (int i = 0; i < amount; i++) {
+            if (x < 0 || y < 0 || x >= tableSize || y >= tableSize) {
                 return false;
             }
 
-            if (table[x][y].equals(mark))
-            {
+            if (table[x][y].equals(mark)) {
                 sum++;
             }
-            else
-            {
+            else {
                 return false;
             }
 
@@ -42,54 +49,82 @@ public class TicTacToeAI {
             y += dirY;
         }
 
-        return (sum == winAmount);
+        return (sum == amount);
     }
 
-    private String checkForWin() {
+    private boolean checkTable(String mark, int amount) {
 
-        for (int i = 0; i < tableSize; i++)
-        {
-            for (int j = 0; j < tableSize; j++)
-            {
-                String mark = table[i][j];
+        for (int i = 0; i < tableSize; i++) {
+            for (int j = 0; j < tableSize; j++) {
+                String m = table[i][j];
 
-                if (!mark.equals(""))
-                {
-                    if (checkFieldForWin(i, j, 1, 0, mark)) return mark;
-                    if (checkFieldForWin(i, j, 0, 1, mark)) return mark;
-                    if (checkFieldForWin(i, j, 1, 1, mark)) return mark;
-                    if (checkFieldForWin(i, j, 1, -1, mark)) return mark;
+                if (m.equals(mark)) {
+                    if (checkField(i, j, 1, 0, mark, amount)) return true;
+                    if (checkField(i, j, 0, 1, mark, amount)) return true;
+                    if (checkField(i, j, 1, 1, mark, amount)) return true;
+                    if (checkField(i, j, 1, -1, mark, amount)) return true;
                 }
             }
         }
 
-        return "";
+        return false;
     }
 
-    private TablePosition jumpRandom(Button[][] buttons) {
+    private TablePosition searchNextPosition(String mark, int amount)
+    {
+        for (int x = 0; x < tableSize; x++) {
+            for (int y = 0; y < tableSize; y++) {
+                if (!table[x][y].equals("")) continue;
+
+                table[x][y] = mark;
+
+                if (checkTable(mark, amount)) {
+                    return new TablePosition(x, y);
+                }
+
+                table[x][y] = "";
+            }
+        }
+
+        return null;
+    }
+
+    private TablePosition jumpRandom() {
 
         int x = 0;
         int y = 0;
 
-        do
-        {
+        do {
             x = (int)(Math.random() * tableSize);
             y = (int)(Math.random() * tableSize);
-        } while (!buttons[x][y].getText().equals(""));
+        } while (!table[x][y].equals(""));
 
         return new TablePosition(x, y);
     }
 
     public TablePosition jump(Button[][] buttons) {
 
-        for (int i = 0; i < tableSize; i++)
-        {
-            for (int j = 0; j < tableSize; j++)
-            {
-                table[i][j] = buttons[i][j].getText().toString();
+        initTable(buttons);
+
+        TablePosition tp = null;
+
+        tp = searchNextPosition(computerPlayer, winAmount);
+        if (tp != null) {
+            return tp;
+        }
+
+        for (int i = 0; i <= 2; i++) {
+            tp = searchNextPosition(opponent, winAmount - i);
+            if (tp != null) {
+                return tp;
             }
         }
 
-        return jumpRandom(buttons);
+        tp = searchNextPosition(computerPlayer, winAmount - 1);
+        if (tp != null) {
+            return tp;
+        }
+
+        return jumpRandom();
     }
 }

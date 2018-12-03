@@ -39,7 +39,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     public Game(Context context) {
         this.context = context;
 
-        AI = new TicTacToeAI(tableSize, winAmount, player1Mark);
+        AI = new TicTacToeAI(tableSize, winAmount, player2Mark, player1Mark);
 
         // Set layout variables.
         textViewPlayer1 = ((Activity) context).findViewById(R.id.text_view_p1);
@@ -131,11 +131,14 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
         if (player1Turn) {
             setMark((Button)v, player1Mark);
-            if (againstToComputer) {
-                TablePosition pos = AI.jump(buttons);
-                setMark(buttons[pos.X][pos.Y], player2Mark);
-            } else {
-                player1Turn = !player1Turn;
+
+            if (checkForWin().equals("")) {
+                if (againstToComputer) {
+                    TablePosition pos = AI.jump(buttons);
+                    setMark(buttons[pos.X][pos.Y], player2Mark);
+                } else {
+                    player1Turn = !player1Turn;
+                }
             }
         } else {
             setMark((Button)v, player2Mark);
