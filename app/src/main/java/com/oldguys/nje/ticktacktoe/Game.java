@@ -2,6 +2,8 @@ package com.oldguys.nje.ticktacktoe;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.util.TypedValue;
@@ -28,9 +30,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     private static final String player2Mark = "O";
     private static final int winAmount = 5;
     private static final int tableSize = 10;
-    private int[][] winPatterns = new int[][] {
-            {0, 1}, {1, 0}, {1, 1}, {1, -1}
-    };
+
     private String lastWinner = "";
     private TicTacToeAI AI;
     private boolean againstToComputer = false;
@@ -39,7 +39,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     public Game(Context context) {
         this.context = context;
 
-        AI = new TicTacToeAI(tableSize, player1Mark);
+        AI = new TicTacToeAI(tableSize, winAmount, player1Mark);
 
         // Set layout variables.
         textViewPlayer1 = ((Activity) context).findViewById(R.id.text_view_p1);
@@ -82,6 +82,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         buttonParams.setMargins(-5, -2, -5, 0);
 
         buttons = new Button[tableSize][tableSize];
+
         for (int i = 0; i < tableSize; i++) {
             LinearLayout row = new LinearLayout(context);
             row.setLayoutParams(linearParams);
@@ -109,22 +110,35 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         }
     }
 
+    private void setMark(Button button, String mark)
+    {
+        if (mark.equals("X")) {
+            button.setTextColor(Color.BLUE);
+        }
+        else {
+            button.setTextColor(Color.RED);
+        }
+
+        button.setTypeface(button.getTypeface(), Typeface.BOLD);
+        button.setText(mark);
+    }
+
     @Override
     public void onClick(View v) {
-        if (!((Button) v).getText().toString().equals("")) {
+        if (!((Button) v).getText().equals("")) {
             return;
         }
 
         if (player1Turn) {
-            ((Button) v).setText( player1Mark );
+            setMark((Button)v, player1Mark);
             if (againstToComputer) {
-                int[] pos = AI.jump(buttons);
-                buttons[pos[0]][pos[1]].setText( player2Mark );
+                TablePosition pos = AI.jump(buttons);
+                setMark(buttons[pos.X][pos.Y], player2Mark);
             } else {
                 player1Turn = !player1Turn;
             }
         } else {
-            ((Button) v).setText( player2Mark );
+            setMark((Button)v, player2Mark);
             player1Turn = !player1Turn;
         }
 
@@ -150,72 +164,51 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         textViewPlayer2.setText( player2Name + ": " + player2Points );
     }
 
+    private boolean checkFieldForWin(int x, int y, int dirX, int dirY, String mark)
+    {
+        int sum = 0;
+
+        for (int i = 0; i < winAmount; i++)
+        {
+            if (x < 0 || y < 0 || x >= tableSize || y >= tableSize)
+            {
+                return false;
+            }
+
+            if (buttons[x][y].getText().equals(mark))
+            {
+                sum++;
+            }
+            else
+            {
+                return false;
+            }
+
+            x += dirX;
+            y += dirY;
+        }
+
+        return (sum == winAmount);
+    }
+
     private String checkForWin() {
 
-        for (int i = 0; i < winPatterns.length; i++) {
-            if (testingPattern(winPatterns[i][0], winPatterns[i][1], player1Mark)) {
-                return player1Mark;
-            } else if (testingPattern(winPatterns[i][0], winPatterns[i][1], player2Mark)) {
-                return player2Mark;
+        for (int i = 0; i < tableSize; i++)
+        {
+            for (int j = 0; j < tableSize; j++)
+            {
+                String mark = buttons[i][j].getText().toString();
+
+                if (!mark.equals(""))
+                {
+                    if (checkFieldForWin(i, j, 1, 0, mark)) return mark;
+                    if (checkFieldForWin(i, j, 0, 1, mark)) return mark;
+                    if (checkFieldForWin(i, j, 1, 1, mark)) return mark;
+                    if (checkFieldForWin(i, j, 1, -1, mark)) return mark;
+                }
             }
         }
 
         return "";
-    }
-
-    private boolean testingPattern(int increaseX, int increaseY, String player) {
-        int lastRow = 0;
-        int lastCol = 0;
-        int y = increaseY > -1 ? 0 : tableSize - 1;
-
-        int x = increaseX > -1 ? 0 : tableSize - 1;
-        while (lastRow < tableSize) {
-            x = increaseX > -1 ? (0 + lastRow) : tableSize - 1;
-            if (checkRect(x, y, increaseX, increaseY, player)) {
-                return true;
-            }
-            lastRow++;
-        }
-
-        x = increaseX > -1 ? 0 : tableSize - 1;
-        while (lastCol < tableSize) {
-            y = increaseY > -1 ? (0 + lastCol) : tableSize - 1;
-            if (checkRect(x, y, increaseX, increaseY, player)) {
-                return true;
-            }
-            lastCol++;
-        }
-
-        return false;
-    }
-
-    private boolean checkRect(int x, int y, int increaseX, int increaseY, String player) {
-        Boolean running = true;
-        int playerCount = 0;
-
-        while (running) {
-            String current = (String) buttons[x][y].getText();
-            Log.d("Pos: ", x + " " + y);
-            if (current.equals("")) {
-                playerCount = 0;
-            } else {
-                if (current.equals(player)) {
-                    playerCount++;
-                } else {
-                    playerCount = 0;
-                }
-            }
-
-            if (playerCount == winAmount) {
-                return true;
-            }
-
-            x += increaseX;
-            y += increaseY;
-
-            if ( x >= buttons.length || y >= buttons[0].length || x < 0 || y < 0 ) running = false;
-        }
-
-        return false;
     }
 }
