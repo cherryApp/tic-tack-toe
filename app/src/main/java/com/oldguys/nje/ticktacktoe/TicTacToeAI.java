@@ -5,66 +5,91 @@ import android.widget.Button;
 public class TicTacToeAI {
 
     private int tableSize;
+    private int winAmount;
     String opponent;
-    private int[][] winPatterns = new int[][] {
-        {0, 1}, {1, 0}, {1, 1}, {1, -1}
-    };
-    private int tryCount = 0;
 
-    public TicTacToeAI(int tableSize, String opponent) {
+    private String[][] table;
+
+    public TicTacToeAI(int tableSize, int winAmount, String opponent) {
         this.tableSize = tableSize;
+        this.winAmount = winAmount;
         this.opponent = opponent;
+
+        table = new String[tableSize][tableSize];
     }
 
-    public int[] jump(Button[][] buttons) {
-        int x = (int ) (Math.random() * tableSize);
-        int y = (int ) (Math.random() * tableSize);
+    private boolean checkFieldForWin(int x, int y, int dirX, int dirY, String mark)
+    {
+        int sum = 0;
 
-        if (tryCount > 10) {
-            tryCount = 0;
-            return new int[]{x, y};
+        for (int i = 0; i < winAmount; i++)
+        {
+            if (x < 0 || y < 0 || x >= tableSize || y >= tableSize)
+            {
+                return false;
+            }
+
+            if (table[x][y].equals(mark))
+            {
+                sum++;
+            }
+            else
+            {
+                return false;
+            }
+
+            x += dirX;
+            y += dirY;
         }
-        tryCount++;
 
-        int direction = (int ) (Math.random() * 4);
-        int[] best = new int[]{0, 0, 0};
+        return (sum == winAmount);
+    }
 
-        for (int i = 0; i < winPatterns.length; i++) {
-            for (int j = 0; j < buttons.length; j++) {
-                for (int k = 0; k < buttons[j].length; k++) {
-                    if (buttons[j][k].getText().toString().equals(opponent)) {
-                        switch (direction) {
-                            case 0:
-                                best = new int[]{j-1, k, 0};
-                                break;
-                            case 1:
-                                best = new int[]{j, k+1, 0};
-                                break;
-                            case 2:
-                                best = new int[]{j+1, k, 0};
-                                break;
-                            case 3:
-                                best = new int[]{j, k-1, 0};
-                                break;
-                            default:
-                                best = new int[]{x, y, 0};
-                        }
-                    }
+    private String checkForWin() {
+
+        for (int i = 0; i < tableSize; i++)
+        {
+            for (int j = 0; j < tableSize; j++)
+            {
+                String mark = table[i][j];
+
+                if (!mark.equals(""))
+                {
+                    if (checkFieldForWin(i, j, 1, 0, mark)) return mark;
+                    if (checkFieldForWin(i, j, 0, 1, mark)) return mark;
+                    if (checkFieldForWin(i, j, 1, 1, mark)) return mark;
+                    if (checkFieldForWin(i, j, 1, -1, mark)) return mark;
                 }
             }
         }
 
-        x = best[0];
-        y = best[1];
+        return "";
+    }
 
-        if (x > tableSize-1 || x < 0 || y > tableSize-1 || y < 0) {
-            return jump(buttons);
+    private TablePosition jumpRandom(Button[][] buttons) {
+
+        int x = 0;
+        int y = 0;
+
+        do
+        {
+            x = (int)(Math.random() * tableSize);
+            y = (int)(Math.random() * tableSize);
+        } while (!buttons[x][y].getText().equals(""));
+
+        return new TablePosition(x, y);
+    }
+
+    public TablePosition jump(Button[][] buttons) {
+
+        for (int i = 0; i < tableSize; i++)
+        {
+            for (int j = 0; j < tableSize; j++)
+            {
+                table[i][j] = buttons[i][j].getText().toString();
+            }
         }
 
-        if (!buttons[x][y].getText().toString().equals("")) {
-            return jump(buttons);
-        }
-
-        return new int[]{x, y};
+        return jumpRandom(buttons);
     }
 }
