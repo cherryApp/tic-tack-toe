@@ -27,7 +27,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     private static final String player1Mark = "X";
     private static final String player2Mark = "O";
     private static final int winAmount = 5;
-    private static final int tableSize = 10;
+    private static final int tableSize = 15;
     private int[][] winPatterns = new int[][] {
             {0, 1}, {1, 0}, {1, 1}, {1, -1}
     };
@@ -150,8 +150,55 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         textViewPlayer2.setText( player2Name + ": " + player2Points );
     }
 
-    private String checkForWin() {
+    private boolean checkField(int x, int y, int[] dir, String mark) {
+        int sum = 0,
+            xx = 0,
+            yy = 0;
 
+        for (int i = 0; i < winAmount; i++) {
+            if (xx > tableSize-1 || yy > tableSize-1) {
+                return false;
+            }
+            if (buttons[xx][yy].getText().toString() == mark) {
+                sum++;
+            } else {
+                break;
+            }
+            xx += dir[0];
+            yy += dir[1];
+        }
+        if (sum == winAmount) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isWinningPosition(int x, int y, String mark) {
+        int sum = 0;
+        // Top to bottom.
+        if (checkField(x, y, new int[]{1,0}, mark)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private String checkForWin() {
+        for (int x = 0; x < tableSize; x++) {
+            for (int y = 0; y < tableSize; y++) {
+                String mark = buttons[x][y].getText().toString();
+                if (mark.equals("")) {
+                    continue;
+                }
+                if (isWinningPosition(x, y, mark)) {
+                    return mark;
+                }
+            }
+        }
+
+        return "";
+        /*
         for (int i = 0; i < winPatterns.length; i++) {
             if (testingPattern(winPatterns[i][0], winPatterns[i][1], player1Mark)) {
                 return player1Mark;
@@ -161,6 +208,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         }
 
         return "";
+        */
     }
 
     private boolean testingPattern(int increaseX, int increaseY, String player) {
